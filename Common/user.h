@@ -3,13 +3,24 @@
 
 #include <QObject>
 
-class User : public QObject
+class User
 {
-    Q_OBJECT
 public:
-    explicit User(QObject *parent = nullptr);
+    explicit User(int id, const std::string& name);
 
-signals:
+    int id() const
+    {
+        return _ID;
+    }
+
+    const std::string& name() const
+    {
+        return _name;
+    }
+
+private:
+    int _ID;
+    std::string _name;
 
 };
 
