@@ -28,4 +28,5 @@ add_executable(Client
 
 target_link_libraries(Client PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Network)
+    Qt${QT_VERSION_MAJOR}::Network
+    Common)

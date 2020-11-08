@@ -22,4 +22,6 @@ add_executable(server
   MessengerServer.h
 )
 target_link_libraries(server
-    Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Network)
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Network
+    Common)

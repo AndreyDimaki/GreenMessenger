@@ -15,6 +15,9 @@ public:
     MessengerServer(QObject* parent);
     ~MessengerServer();
 
+public slots:
+    void receiveDataFromClient();
+
 private:
 
     ///

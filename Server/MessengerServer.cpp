@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "MessengerServer.h"
 
 MessengerServer::MessengerServer(QObject* parent) :
@@ -19,10 +21,24 @@ void MessengerServer::processNewConnection()
     QTcpSocket* clientConnection = _tcpServer->nextPendingConnection();
     connect(clientConnection, &QAbstractSocket::disconnected,
             clientConnection, &QObject::deleteLater);
+    connect(clientConnection, SIGNAL(readyRead()), this, SLOT(receiveDataFromClient()) );
     _clientConnections.push_back(clientConnection);
 }
 
+void MessengerServer::receiveDataFromClient()
+{
+    QTcpSocket* clientConnection = dynamic_cast<QTcpSocket*>(sender());
+
+    if( !clientConnection ) return;
+    if( clientConnection->state() == QAbstractSocket::ConnectedState ) {
+        QByteArray read = clientConnection->readAll();
+        QString readBuf = QString::fromLatin1(read);
+        processClientMessage(readBuf);
+    }
+}
+
+
 void MessengerServer::processClientMessage(QString& message)
 {
-
+    std::cout << message.toStdString() << "\n";
 }

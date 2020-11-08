@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QThread>
 
+#include <QTableWidgetItem>
+
 #include "../Common/message.h"
 
 QT_BEGIN_NAMESPACE
@@ -39,5 +41,6 @@ private:
     ClientController* _controller;
     QThread* _thread;
     QList<Message*> _messageBuffer;
+    QList<QTableWidgetItem*> _items;
 };
 #endif // MAINWINDOW_H
