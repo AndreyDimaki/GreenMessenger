@@ -14,6 +14,13 @@ QT_END_NAMESPACE
 
 class ClientController;
 
+enum class LoggingStage
+{
+    LS_NotLoggedIn = 1,
+    LS_InProgress,
+    LS_LoggedIn
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -31,10 +38,14 @@ signals:
 
 private:
     void sendMessage();
-
+    void tryCreateUser();
+    void tryLogin();
+    void logout();
     void appendSentMessage(const Message *message);
 
     Ui::MainWindow *ui;
+
+    LoggingStage _loggingStage = LoggingStage::LS_NotLoggedIn;
 
     int _currentSenderID = -1;
     int _currentReceiverID = -1;
@@ -42,5 +53,7 @@ private:
     QThread* _thread;
     QList<Message*> _messageBuffer;
     QList<QTableWidgetItem*> _items;
+
 };
 #endif // MAINWINDOW_H
+

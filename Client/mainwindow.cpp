@@ -9,8 +9,16 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     connect(ui->sendMessageButton, &QPushButton::clicked, this, &MainWindow::sendMessage);
+    connect(ui->createButton, &QPushButton::clicked, this, &MainWindow::tryCreateUser);
+    connect(ui->loginButton, &QPushButton::clicked, this, &MainWindow::tryLogin);
+    connect(ui->actionLogout, &QAction::triggered, this,  &MainWindow::logout);
+    connect(ui->actionExit, &QAction::triggered, this, []()
+    {
+        QApplication::exit();
+    });
 
     ui->messageTable->setColumnCount(1);
+    ui->stackedWidget->setCurrentIndex(0);
 
     _controller = new ClientController();
     _thread = new QThread(this);
@@ -47,6 +55,33 @@ void MainWindow::sendMessage()
                                ui->newMessageText->text().toStdString());
     _messageBuffer.append(message);
     emit trySendMessage(message);
+}
+
+void MainWindow::tryCreateUser()
+{
+    if (!_controller->isSocketConnected())
+        return;
+    auto message = new Message(0, 0, MessageTypeID::MSG_CreateNewUser,
+                               ui->newUserNameEdit->text().toStdString());
+    emit trySendMessage(message);
+}
+
+void MainWindow::tryLogin()
+{
+    if (!_controller->isSocketConnected())
+        return;
+    auto message = new Message(0, 0, MessageTypeID::MSG_LogIn,
+                               ui->newUserNameEdit->text().toStdString());
+    emit trySendMessage(message);
+
+    /// Пока так
+    ui->stackedWidget->setCurrentIndex(1);
+}
+
+void MainWindow::logout()
+{
+    _loggingStage = LoggingStage::LS_NotLoggedIn;
+    ui->stackedWidget->setCurrentIndex(0);
 }
 
 void MainWindow::onMessageSendSuccess(const Message* message)

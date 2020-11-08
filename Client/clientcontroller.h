@@ -19,6 +19,7 @@ public:
     User* user();
 
     void connectToHost();
+    bool isSocketConnected();
 
 public slots:
     void interceptError(QAbstractSocket::SocketError socketError);
@@ -47,7 +48,6 @@ private:
     void readData();
     bool nextPipeline();
     void stateChanged(QAbstractSocket::SocketState state);
-    bool isSocketConnected();
     void run(const QString &cmd);
     QString sendStringMessages(const QList<QString> &msgs, int timeOutMSec);
     void checkSocketConnect();
