@@ -5,8 +5,6 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 
-#include "../Common/message.h"
-
 class MessengerServer : public QObject
 {
     Q_OBJECT
@@ -29,7 +27,7 @@ private:
     /// \brief Обрабатывает сообщение от клиента
     /// \param message
     ///
-    void processClientMessage(QString &message);
+    void processClientMessage(std::string &messageStr);
     QTcpServer* _tcpServer;
     QList<QTcpSocket*> _clientConnections;
 

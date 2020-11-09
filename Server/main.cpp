@@ -4,6 +4,8 @@
 
 #include "MessengerServer.h"
 
+#include "../Common/message.h"
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);

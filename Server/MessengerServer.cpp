@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "MessengerServer.h"
+#include "../Common/message.h"
 
 MessengerServer::MessengerServer(QObject* parent) :
     QObject(parent)
@@ -32,13 +33,25 @@ void MessengerServer::receiveDataFromClient()
     if( !clientConnection ) return;
     if( clientConnection->state() == QAbstractSocket::ConnectedState ) {
         QByteArray read = clientConnection->readAll();
-        QString readBuf = QString::fromLatin1(read);
+        std::string readBuf = QString::fromLatin1(read).toStdString();
         processClientMessage(readBuf);
     }
 }
 
 
-void MessengerServer::processClientMessage(QString& message)
+void MessengerServer::processClientMessage(std::string& messageStr)
 {
-    std::cout << message.toStdString() << "\n";
+    auto parsedMessage = Message::createNew(messageStr);
+    if (parsedMessage)
+    {
+        /// Здесь обрабатываем принятое сообщение
+        switch (parsedMessage->id())
+        {
+
+        }
+    }
+    else
+    {
+        std::cout << "Cannot parse message " << messageStr << "\n";
+    }
 }
