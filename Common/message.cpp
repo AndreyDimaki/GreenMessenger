@@ -32,13 +32,13 @@ Message* Message::createNew(const std::string& inputString)
         int senderID = std::stoi(result[0]);
         int receiverID = std::stoi(result[1]);
         MessageTypeID messageID = static_cast<MessageTypeID>(std::stoi(result[2]));
-        std::string content = inputString.substr(messagePos);
+        std::string content = inputString.substr(messagePos, inputString.length()-messagePos-1);
         return new Message(senderID, receiverID, messageID, content);
     }
     return nullptr;
 }
 
-const std::string& Message::toOutputString()
+const std::string& Message::toOutputString() const
 {
     std::stringstream ss;
     ss << _senderID << ':'

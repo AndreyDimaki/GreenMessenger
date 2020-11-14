@@ -4,6 +4,7 @@
 #include <string>
 
 static constexpr int16_t MessengerPort = 5025;
+static constexpr int ServerUserID = 0;
 
 enum class MessageTypeID : int
 {
@@ -13,6 +14,8 @@ enum class MessageTypeID : int
     MSG_ReceiveUserList,
     MSG_ReceiveHistory,
     MSG_CannotCreateUser,
+    MSG_UserCreated,
+    MSG_LoginSuccess,
     MSG_CannotLogin
 };
 
@@ -43,12 +46,12 @@ public:
 
     static Message* createNew(const std::string& inputString);
 
-    const std::string& toOutputString();
+    const std::string& toOutputString() const;
 
 private:
     MessageTypeID _ID;
     std::string _content;
-    std::string _outputString;
+    mutable std::string _outputString;
     int _senderID;
     int _receiverID;
 };

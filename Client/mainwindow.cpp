@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
@@ -71,11 +73,9 @@ void MainWindow::tryLogin()
     if (!_controller->isSocketConnected())
         return;
     auto message = new Message(0, 0, MessageTypeID::MSG_LogIn,
-                               ui->newUserNameEdit->text().toStdString());
+                               ui->userNameEdit->text().toStdString());
+    _loggingStage = LoggingStage::LS_InProgress;
     emit trySendMessage(message);
-
-    /// Пока так
-    ui->stackedWidget->setCurrentIndex(1);
 }
 
 void MainWindow::logout()
@@ -107,12 +107,30 @@ void MainWindow::onMessageSendError(const Message* message)
 
 void MainWindow::onMessageReceived(const Message* message)
 {
-    QString str = QString::fromStdString(message->content());
-    QTableWidgetItem* tmp = new QTableWidgetItem(str);
-    tmp->setTextAlignment(Qt::AlignRight);
-    _items.append(tmp);
-    ui->messageTable->insertRow(ui->messageTable->rowCount());
-    ui->messageTable->setItem(ui->messageTable->rowCount()-1, 0, tmp);
+    std::cout << message->toOutputString() << std::endl;
+    if (_loggingStage == LoggingStage::LS_NotLoggedIn)
+        return;
+
+    if (_loggingStage == LoggingStage::LS_InProgress)
+    {
+        if (message->id() == MessageTypeID::MSG_LoginSuccess)
+        {
+            _loggingStage = LoggingStage::LS_LoggedIn;
+            setWindowTitle("GreenMessenger - "+QString::fromStdString(message->content()));
+            ui->stackedWidget->setCurrentIndex(1);
+        }
+        return;
+    }
+
+    if (_loggingStage == LoggingStage::LS_LoggedIn)
+    {
+        QString str = QString::fromStdString(message->content());
+        QTableWidgetItem* tmp = new QTableWidgetItem(str);
+        tmp->setTextAlignment(Qt::AlignRight);
+        _items.append(tmp);
+        ui->messageTable->insertRow(ui->messageTable->rowCount());
+        ui->messageTable->setItem(ui->messageTable->rowCount()-1, 0, tmp);
+    }
 }
 
 void MainWindow::appendSentMessage(const Message* message)

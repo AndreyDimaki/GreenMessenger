@@ -40,7 +40,7 @@ void ClientController::sendMessage(const Message* message)
 {
     if (isSocketConnected())
     {
-        QString msg = QString::fromStdString(message->content());
+        QString msg = QString::fromStdString(message->toOutputString() );
         QString answer = sendStringMessages( QList<QString>() << msg, 0 );
         emit messageSendSuccess(message);
     }
@@ -123,8 +123,17 @@ void ClientController::readData()
 
     _readBuf += QString::fromLatin1(read);
 
+    qDebug() << _readBuf;
+
+    /// TODO: Split readbuf;
+
     if(*(read.end() - 1) == '\n')
     {
+        auto message = Message::createNew(_readBuf.toStdString());
+        if (message)
+        {
+            emit messageReceived(message);
+        }
         nextPipeline(); // продолжить обработку
     }
 }

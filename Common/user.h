@@ -3,10 +3,12 @@
 
 #include <QObject>
 
+class QTcpSocket;
+
 class User
 {
 public:
-    explicit User(int id, const std::string& name);
+    explicit User(int id, const std::string& name, QTcpSocket* socket);
 
     int id() const
     {
@@ -18,9 +20,20 @@ public:
         return _name;
     }
 
+    QTcpSocket* socket()
+    {
+        return _socket;
+    }
+
+    void setSocket(QTcpSocket* socket)
+    {
+        _socket = socket;
+    }
+
 private:
     int _ID;
     std::string _name;
+    QTcpSocket* _socket;
 
 };
 
