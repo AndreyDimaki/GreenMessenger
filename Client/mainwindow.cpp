@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
@@ -18,6 +19,9 @@ MainWindow::MainWindow(QWidget *parent)
     {
         QApplication::exit();
     });
+
+    connect(ui->userListWidget, &QListWidget::currentRowChanged,
+            this, &MainWindow::onReceivingUserChanged);
 
     ui->messageTable->setColumnCount(1);
     ui->stackedWidget->setCurrentIndex(0);
@@ -115,8 +119,13 @@ void MainWindow::onMessageReceived(const Message* message)
     {
         if (message->id() == MessageTypeID::MSG_LoginSuccess)
         {
+            _userList.clear();
+            ui->userListWidget->clear();
             _loggingStage = LoggingStage::LS_LoggedIn;
             setWindowTitle("GreenMessenger - "+QString::fromStdString(message->content()));
+            // Получили с сервера наш ID
+            _currentSenderID = message->receiverID();
+            qDebug() << "Current user ID : " << _currentSenderID;
             ui->stackedWidget->setCurrentIndex(1);
         }
         return;
@@ -124,13 +133,42 @@ void MainWindow::onMessageReceived(const Message* message)
 
     if (_loggingStage == LoggingStage::LS_LoggedIn)
     {
-        QString str = QString::fromStdString(message->content());
-        QTableWidgetItem* tmp = new QTableWidgetItem(str);
-        tmp->setTextAlignment(Qt::AlignRight);
-        _items.append(tmp);
-        ui->messageTable->insertRow(ui->messageTable->rowCount());
-        ui->messageTable->setItem(ui->messageTable->rowCount()-1, 0, tmp);
+        // Входящее сообщение
+        if (message->id() == MessageTypeID::MSG_SendMessage)
+        {
+            QString str = QString::fromStdString(message->content());
+            QTableWidgetItem* tmp = new QTableWidgetItem(str);
+            tmp->setTextAlignment(Qt::AlignRight);
+            _items.append(tmp);
+            ui->messageTable->insertRow(ui->messageTable->rowCount());
+            ui->messageTable->setItem(ui->messageTable->rowCount()-1, 0, tmp);
+            return;
+        }
+
+        // Пользователь из списка
+        if (message->id() == MessageTypeID::MSG_ReceiveUserList)
+        {
+            std::vector<std::string> result;
+            std::stringstream sstream(message->content());
+            for (std::string subline; std::getline(sstream, subline, ','); )
+            {
+                result.push_back(subline);
+            }
+            if (result.size() == 2)
+            {
+                _userList.push_back(User(std::stoi(result[0]), result[1], nullptr));
+                ui->userListWidget->addItem(QString::fromStdString(result[1]));
+            }
+        }
     }
+}
+
+void MainWindow::onReceivingUserChanged(int rcvUserIndex)
+{
+    qDebug() << "Current receiver : "
+             << _userList.at(rcvUserIndex).id()
+             << QString::fromStdString(_userList.at(rcvUserIndex).name());
+    _currentReceiverID = _userList.at(rcvUserIndex).id();
 }
 
 void MainWindow::appendSentMessage(const Message* message)

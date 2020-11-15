@@ -123,17 +123,22 @@ void ClientController::readData()
 
     _readBuf += QString::fromLatin1(read);
 
-    qDebug() << _readBuf;
-
-    /// TODO: Split readbuf;
-
-    if(*(read.end() - 1) == '\n')
+    QStringList rcvList = _readBuf.split("\n");
+    for (auto inputStr : rcvList)
     {
-        auto message = Message::createNew(_readBuf.toStdString());
+        // Вернем на место разделитель сообщений!
+        auto message = Message::createNew((inputStr+"\n").toStdString());
         if (message)
         {
             emit messageReceived(message);
         }
+    }
+
+    // Грубо, но пока так
+    _readBuf.clear();
+
+    if(*(read.end() - 1) == '\n')
+    {
         nextPipeline(); // продолжить обработку
     }
 }

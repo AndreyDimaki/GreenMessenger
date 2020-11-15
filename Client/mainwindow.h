@@ -7,6 +7,7 @@
 #include <QTableWidgetItem>
 
 #include "../Common/message.h"
+#include "../Common/user.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -33,6 +34,8 @@ public:
     void onMessageSendError(const Message* message);
     void onMessageReceived(const Message* message);
 
+    void onReceivingUserChanged(int rcvUserIndex);
+
 signals:
     void trySendMessage(const Message* message);
 
@@ -51,6 +54,7 @@ private:
     int _currentReceiverID = -1;
     ClientController* _controller;
     QThread* _thread;
+    QList<User> _userList;
     QList<Message*> _messageBuffer;
     QList<QTableWidgetItem*> _items;
 
