@@ -15,9 +15,6 @@ public:
     ~ClientController();
 
     void sendMessage(const Message* message);
-
-    User* user();
-
     void connectToHost();
     bool isSocketConnected();
 
@@ -26,9 +23,8 @@ public slots:
 
 signals:
     void error( const QString &err );
-    void pipelineFinishing();
-    void updateStatus();
-
+    void pipelineFinished();
+    void statusUpdated();
 
     void messageSendSuccess(const Message* message);
     void messageSendError(const Message* message);

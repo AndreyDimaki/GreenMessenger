@@ -34,7 +34,7 @@ void MessengerServer::processNewConnection()
 
 void MessengerServer::receiveDataFromClient()
 {
-    QTcpSocket* clientConnection = dynamic_cast<QTcpSocket*>(sender());
+    QTcpSocket* clientConnection = qobject_cast<QTcpSocket*>(sender());
 
     if( !clientConnection ) return;
     if( clientConnection->state() == QAbstractSocket::ConnectedState ) {
@@ -139,6 +139,12 @@ void MessengerServer::processCreateNewUserMsg(Message* message,  QTcpSocket* cli
         std::string messageStr = msg.toOutputString();
         clientConnection->write(messageStr.data(), messageStr.length());
     }
+    else
+    {
+        Message msg(0,0, MessageTypeID::MSG_CannotCreateUser, message->content());
+        std::string messageStr = msg.toOutputString();
+        clientConnection->write(messageStr.data(), messageStr.length());
+    }
 }
 
 void MessengerServer::processLoginMsg(Message* message, QTcpSocket* clientConnection)
@@ -150,19 +156,19 @@ void MessengerServer::processLoginMsg(Message* message, QTcpSocket* clientConnec
     // Если пользователь есть, отправляем соообщение, что вход совершен
     if (it != _userList.end())
     {
-        Message msg(0,(*it).id(), MessageTypeID::MSG_LoginSuccess, message->content());
-        (*it).setSocket(clientConnection);
+        Message msg(0,it->id(), MessageTypeID::MSG_LoginSuccess, message->content());
+        it->setSocket(clientConnection);
         std::string messageStr = msg.toOutputString();
         clientConnection->write(messageStr.data(), messageStr.length());
         for (auto& user : _userList)
         {
             // Отправляем список пользователей, имеющихся в системе
             // Здесь можно отправлять список только активных пользователей
-            if (user.id() != (*it).id())
+            if (user.id() != it->id())
             {
                 std::stringstream ss;
                 ss << user.id() << "," << user.name();
-                Message msg(0,(*it).id(), MessageTypeID::MSG_ReceiveUserList, ss.str());
+                Message msg(0,it->id(), MessageTypeID::MSG_ReceiveUserList, ss.str());
                 std::string messageStr = msg.toOutputString();
                 clientConnection->write(messageStr.data(), messageStr.length());
             }

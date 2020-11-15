@@ -6,8 +6,7 @@
 
 #include <QTableWidgetItem>
 
-#include "../Common/message.h"
-#include "../Common/user.h"
+#include "usermessages.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -30,11 +29,12 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void onReceivingUserChanged(int rcvUserIndex);
+
+    // Сигналы из контроллера
     void onMessageSendSuccess(const Message* message);
     void onMessageSendError(const Message* message);
     void onMessageReceived(const Message* message);
-
-    void onReceivingUserChanged(int rcvUserIndex);
 
 signals:
     void trySendMessage(const Message* message);
@@ -44,20 +44,22 @@ private:
     void tryCreateUser();
     void tryLogin();
     void logout();
-    void appendSentMessage(const Message *message);
+    void appendMessage(const Message* message, bool isReceived);
+    void refreshMessagesList(UserMessages &user);
+    void appendMessageToTable(const Message *message, bool isReceived);
 
     Ui::MainWindow *ui;
 
     LoggingStage _loggingStage = LoggingStage::LS_NotLoggedIn;
 
     int _currentSenderID = -1;
-    int _currentReceiverID = -1;
     ClientController* _controller;
     QThread* _thread;
-    QList<User> _userList;
-    QList<Message*> _messageBuffer;
+    QList<UserMessages> _userList;
+    UserMessages* _currentReceivingUser = nullptr;
+    QList<Message*> _outputMessageBuffer;
     QList<QTableWidgetItem*> _items;
-
 };
+
 #endif // MAINWINDOW_H
 

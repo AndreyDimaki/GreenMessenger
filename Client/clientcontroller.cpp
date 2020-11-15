@@ -23,18 +23,8 @@ ClientController::ClientController(QObject *parent) :
 
 ClientController::~ClientController()
 {
-    _socket->deleteLater();
+    // _socket->deleteLater();
 }
-
-User* ClientController::user()
-{
-    if (_user )
-    {
-        return _user;
-    }
-    return nullptr;
-}
-
 
 void ClientController::sendMessage(const Message* message)
 {
@@ -58,7 +48,7 @@ QString ClientController::sendStringMessages(const QList<QString>& msgs, int tim
     _stringMessages = msgs;
 
     QEventLoop wait;
-    connect( this, SIGNAL( pipelineFinishing() ), &wait, SLOT( quit() ) );
+    connect( this, SIGNAL( pipelineFinished() ), &wait, SLOT( quit() ) );
 
     QTimer timeOutTimer;
     if( timeOutMSec > 0 ) {
@@ -90,7 +80,7 @@ void ClientController::checkSocketConnect()
     if( !_run )
     {
         bool status = isSocketConnected();
-        if( _oldStatus != status ) emit updateStatus();
+        if( _oldStatus != status ) emit statusUpdated();
     }
 }
 
@@ -174,7 +164,7 @@ void ClientController::stateChanged(QAbstractSocket::SocketState state)
         case QAbstractSocket::ClosingState:
             qInfo() << "ClosingState";  break;
     }
-    emit updateStatus();
+    emit statusUpdated();
 }
 
 bool ClientController::nextPipeline()
@@ -182,7 +172,7 @@ bool ClientController::nextPipeline()
     forever {
         if( _stringMessages.isEmpty() )
         {
-            emit pipelineFinishing();
+            emit pipelineFinished();
             return false;
         }
 
@@ -193,9 +183,5 @@ bool ClientController::nextPipeline()
 
 bool ClientController::isSocketConnected()
 {
-    if( (_socket != nullptr) && (_socket->state() == QAbstractSocket::ConnectedState) )
-    {
-        return true;
-    }
-    return false;
+    return (_socket != nullptr) && (_socket->state() == QAbstractSocket::ConnectedState) ? true : false;
 }

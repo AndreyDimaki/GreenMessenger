@@ -24,6 +24,8 @@ add_executable(Client
     mainwindow.ui
     clientcontroller.cpp
     clientcontroller.h
+    usermessages.cpp
+    usermessages.h
   )
 
 target_link_libraries(Client PRIVATE

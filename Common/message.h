@@ -3,8 +3,8 @@
 
 #include <string>
 
-static constexpr int16_t MessengerPort = 5025;
-static constexpr int ServerUserID = 0;
+constexpr int16_t MessengerPort = 5025;
+constexpr int ServerUserID = 0;
 
 enum class MessageTypeID : int
 {
