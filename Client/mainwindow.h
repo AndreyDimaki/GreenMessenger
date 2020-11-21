@@ -45,7 +45,8 @@ private:
     void tryCreateUser();
     void tryLogin();
     void logout();
-    void appendMessage(const Message* message, bool isReceived);
+    void appendSentMessage(const Message* message);
+    void appendReceivedMessage(const Message* message);
     void refreshMessagesList(UserMessages &user);
     void appendMessageToTable(const Message *message, bool isReceived);
 

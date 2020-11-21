@@ -108,7 +108,7 @@ void MainWindow::onMessageSendSuccess(const Message* message)
     int messageIndex = _outputMessageBuffer.lastIndexOf(const_cast<Message*>(message));
     if (messageIndex > -1)
     {
-        appendMessage(message, false);
+        appendSentMessage(message);
         _outputMessageBuffer.removeAt(messageIndex);
         delete message;
     }
@@ -159,7 +159,7 @@ void MainWindow::onMessageReceived(const Message* message)
             if (message->id() == MessageTypeID::MSG_SendMessage)
             {
                 // Входящее сообщение
-                appendMessage(message, true);
+                appendReceivedMessage(message);
             }
             else if (message->id() == MessageTypeID::MSG_ReceiveUserList)
             {
@@ -211,12 +211,35 @@ void MainWindow::refreshMessagesList(UserMessages& user)
     }
 }
 
-void MainWindow::appendMessage(const Message* message, bool isReceived)
+void MainWindow::appendSentMessage(const Message* message)
 {
     if (_loggingStage != LoggingStage::LS_LoggedIn)
         return;
     _currentReceivingUser->appendMessage(message);
-    appendMessageToTable(message, isReceived);
+    appendMessageToTable(message, false);
+}
+
+void MainWindow::appendReceivedMessage(const Message* message)
+{
+    if (_loggingStage != LoggingStage::LS_LoggedIn)
+        return;
+
+    // Если пришло сообщение от выбранного в данный момент пользователя
+    if (_currentReceivingUser->id() == message->senderID())
+    {
+        _currentReceivingUser->appendMessage(message);
+        appendMessageToTable(message, true);
+    }
+    else
+    {
+        for (auto& user : _userList)
+        {
+            if (user.id() == message->senderID())
+            {
+                user.appendMessage(message);
+            }
+        }
+    }
 }
 
 void MainWindow::appendMessageToTable(const Message* message, bool isReceived)
