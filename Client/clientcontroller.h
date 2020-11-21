@@ -34,18 +34,16 @@ signals:
 
 private:
     QTcpSocket* _socket;
-    User* _user;
-
-    QString        _readBuf;
-    QList<QString> _stringMessages; // очередь строковых сообщений
+    QString _readBuf;
+    QList<std::string> _stringMessages; // очередь строковых сообщений
     bool _run;
     bool _oldStatus = false;
 
     void readData();
     bool nextPipeline();
     void stateChanged(QAbstractSocket::SocketState state);
-    void run(const QString &cmd);
-    QString sendStringMessages(const QList<QString> &msgs, int timeOutMSec);
+    void run(const std::string &msg);
+    QString sendStringMessage(const std::string& msg, int timeOutMSec = 0);
     void checkSocketConnect();
 };
 

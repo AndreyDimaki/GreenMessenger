@@ -29,7 +29,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void onReceivingUserChanged(int rcvUserIndex);
+    // Выбран другой пользователь в таблице
+    void onReceivingUserChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
 
     // Сигналы из контроллера
     void onMessageSendSuccess(const Message* message);

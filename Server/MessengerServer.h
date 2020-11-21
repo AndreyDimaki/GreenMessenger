@@ -41,7 +41,7 @@ private:
 
     void processCreateNewUserMsg(Message* message, QTcpSocket* clientConnection);
     void processLoginMsg(Message* message, QTcpSocket* clientConnection);
-    void processSendMsg(Message* message, QTcpSocket* clientConnection);
+    void processSendMsg(Message* message);
 };
 
 #endif // MESSENGERSERVER_H

@@ -4,8 +4,7 @@
 #include "clientcontroller.h"
 
 ClientController::ClientController(QObject *parent) :
-    QObject(parent),
-    _user(nullptr)
+    QObject(parent)
 {
     qRegisterMetaType<QAbstractSocket::SocketState>();
     qRegisterMetaType<QAbstractSocket::SocketError>();
@@ -23,15 +22,14 @@ ClientController::ClientController(QObject *parent) :
 
 ClientController::~ClientController()
 {
-    // _socket->deleteLater();
 }
 
 void ClientController::sendMessage(const Message* message)
 {
     if (isSocketConnected())
     {
-        QString msg = QString::fromStdString(message->toOutputString() );
-        QString answer = sendStringMessages( QList<QString>() << msg, 0 );
+        std::string msg = message->toOutputString();
+        QString answer = sendStringMessage( msg );
         emit messageSendSuccess(message);
     }
     else
@@ -41,11 +39,10 @@ void ClientController::sendMessage(const Message* message)
 }
 
 
-QString ClientController::sendStringMessages(const QList<QString>& msgs, int timeOutMSec)
+QString ClientController::sendStringMessage(const std::string& msg, int timeOutMSec)
 {
     _run = true;
-
-    _stringMessages = msgs;
+    _stringMessages << msg;
 
     QEventLoop wait;
     connect( this, SIGNAL( pipelineFinished() ), &wait, SLOT( quit() ) );
@@ -92,12 +89,12 @@ void ClientController::connectToHost()
     _socket->connectToHost( "localhost", MessengerPort );
 }
 
-void ClientController::run(const QString& cmd)
+void ClientController::run(const std::string& msg)
 {
     if( _socket->state() == QAbstractSocket::ConnectedState )
     {
         _readBuf.clear();
-        _socket->write( cmd.toLatin1() );
+        _socket->write( msg.data() );
     }
     else
     {
@@ -111,7 +108,9 @@ void ClientController::readData()
 {
     QByteArray read = _socket->readAll();
 
-    _readBuf += QString::fromLatin1(read);
+    _readBuf += QString::fromUtf8(read);
+
+    qDebug() << "ClientController::readData() : " << QString::fromUtf8(read);
 
     QStringList rcvList = _readBuf.split("\n");
     for (auto inputStr : rcvList)
@@ -175,9 +174,7 @@ bool ClientController::nextPipeline()
             emit pipelineFinished();
             return false;
         }
-
-        QString msg = _stringMessages.takeFirst();
-        run( msg );
+        run( _stringMessages.takeFirst() );
     }
 }
 

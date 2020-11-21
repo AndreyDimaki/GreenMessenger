@@ -38,8 +38,7 @@ void MessengerServer::receiveDataFromClient()
 
     if( !clientConnection ) return;
     if( clientConnection->state() == QAbstractSocket::ConnectedState ) {
-        QByteArray read = clientConnection->readAll();
-        std::string readBuf = QString::fromLatin1(read).toStdString();
+        std::string readBuf = clientConnection->readAll().toStdString();
         processClientMessage(readBuf, clientConnection);
     }
 }
@@ -61,7 +60,10 @@ void MessengerServer::processClientMessage(std::string& messageStr, QTcpSocket* 
             processLoginMsg(parsedMessage, clientConnection);
         break;
         case MessageTypeID::MSG_SendMessage:
-            processSendMsg(parsedMessage, clientConnection);
+            processSendMsg(parsedMessage);
+        break;
+        default:
+            /// Остальные типы сообщений здесь не обрабатываем
         break;
         }
         delete parsedMessage;
@@ -183,7 +185,7 @@ void MessengerServer::processLoginMsg(Message* message, QTcpSocket* clientConnec
     }
 }
 
-void MessengerServer::processSendMsg(Message* message, QTcpSocket* clientConnection)
+void MessengerServer::processSendMsg(Message* message)
 {
     // Проверяем, есть ли получатель сообщения
     auto receiver = std::find_if(_userList.begin(), _userList.end(),
@@ -196,10 +198,10 @@ void MessengerServer::processSendMsg(Message* message, QTcpSocket* clientConnect
     // Финальная проверка и отправка сообщения получателю
     if ((receiver != _userList.end()) &&
         (sender != _userList.end()) &&
-        (sender->socket() == clientConnection) &&
         (receiver->socket() != nullptr))
     {
         std::string messageStr = message->toOutputString();
+        std::cout << "processSendMsg : " << messageStr;
         receiver->socket()->write(messageStr.data(), messageStr.length());
     }
 }

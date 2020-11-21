@@ -21,13 +21,20 @@ MainWindow::MainWindow(QWidget *parent)
         QApplication::exit();
     });
 
-    connect(ui->userListWidget, &QListWidget::currentRowChanged,
+    connect(ui->userTableWidget, &QTableWidget::currentCellChanged,
             this, &MainWindow::onReceivingUserChanged);
 
-    ui->messageTable->setColumnCount(1);
     ui->stackedWidget->setCurrentIndex(0);
 
+    ui->messageTable->setColumnCount(1);
     ui->messageTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+
+    ui->userTableWidget->setColumnCount(1);
+    ui->userTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->userTableWidget->horizontalHeader()->setHighlightSections(false);
+    ui->userTableWidget->horizontalHeader()->setSectionsClickable(false);
+    ui->userTableWidget->horizontalHeader()->setSectionsMovable(false);
+    ui->userTableWidget->setHorizontalHeaderLabels(QStringList() << "Contacts");
 
     _controller = new ClientController();
     _thread = new QThread(this);
@@ -133,7 +140,8 @@ void MainWindow::onMessageReceived(const Message* message)
             if (message->id() == MessageTypeID::MSG_LoginSuccess)
             {
                 _userList.clear();
-                ui->userListWidget->clear();
+                ui->userTableWidget->clearContents();
+                ui->userTableWidget->setRowCount(0);
                 _loggingStage = LoggingStage::LS_LoggedIn;
                 setWindowTitle("GreenMessenger - "+QString::fromStdString(message->content()));
                 // Получили с сервера наш ID
@@ -165,7 +173,16 @@ void MainWindow::onMessageReceived(const Message* message)
                 if (result.size() == 2)
                 {
                     _userList.push_back(UserMessages(std::stoi(result[0]), result[1]));
-                    ui->userListWidget->addItem(QString::fromStdString(result[1]));
+                    QString str = QString::fromStdString(result[1]);
+                    QTableWidgetItem* tmp = new QTableWidgetItem(str);
+                    tmp->setFlags(tmp->flags() ^ Qt::ItemIsEditable);
+                    tmp->setTextAlignment(Qt::AlignLeft);
+                    ui->userTableWidget->insertRow(ui->userTableWidget->rowCount());
+                    ui->userTableWidget->setItem(ui->userTableWidget->rowCount()-1, 0, tmp);
+                }
+                if (ui->userTableWidget->rowCount()>0)
+                {
+                    ui->userTableWidget->setCurrentCell(0,0);
                 }
             }
         break;
@@ -173,9 +190,13 @@ void MainWindow::onMessageReceived(const Message* message)
     delete message;
 }
 
-void MainWindow::onReceivingUserChanged(int rcvUserIndex)
+void MainWindow::onReceivingUserChanged(int currentRow, int currentColumn,
+                                        int previousRow, int previousColumn)
 {
-    _currentReceivingUser = &_userList[rcvUserIndex];
+    Q_UNUSED(currentColumn)
+    Q_UNUSED(previousRow)
+    Q_UNUSED(previousColumn)
+    _currentReceivingUser = &_userList[currentRow];
     refreshMessagesList(*_currentReceivingUser);
 }
 
