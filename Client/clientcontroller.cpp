@@ -6,6 +6,10 @@
 ClientController::ClientController(QObject *parent) :
     QObject(parent)
 {
+    _timerTryConnection = new QTimer( this );
+    _timerTryConnection->setSingleShot( false );
+    _timerTryConnection->setInterval( 3000 );
+
     qRegisterMetaType<QAbstractSocket::SocketState>();
     qRegisterMetaType<QAbstractSocket::SocketError>();
 
@@ -18,6 +22,8 @@ ClientController::ClientController(QObject *parent) :
     connect(_socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
             this, SLOT(interceptError(QAbstractSocket::SocketError)));
 
+    QObject::connect( _timerTryConnection, &QTimer::timeout, this, &ClientController::connectToHost );
+    _timerTryConnection->start();
 }
 
 ClientController::~ClientController()
@@ -77,13 +83,16 @@ void ClientController::checkSocketConnect()
     if( !_run )
     {
         bool status = isSocketConnected();
-        if( _oldStatus != status ) emit statusUpdated();
+        if( _oldStatus != status ) emit statusUpdated(_connectStatus);
     }
 }
 
 void ClientController::connectToHost()
 {
-    if( _socket->isValid() ) {
+    if (isSocketConnected()) return;
+
+    if ( _socket->isValid() )
+    {
         _socket->abort();
     }
     _socket->connectToHost( "localhost", MessengerPort );
@@ -142,28 +151,28 @@ void ClientController::interceptError(QAbstractSocket::SocketError socketError)
 
 void ClientController::stateChanged(QAbstractSocket::SocketState state)
 {
-    qDebug() << "ClientController::stateChanged";
     switch( state )
     {
         case QAbstractSocket::UnconnectedState:
         {
-            qInfo() << "UnconnectedState";
+            _connectStatus = "UnconnectedState";
             QTimer::singleShot( 2000, this, &ClientController::connectToHost);
         } break;
         case QAbstractSocket::HostLookupState:
-            qInfo() << "HostLookupState"; break;
+            _connectStatus = "HostLookupState"; break;
         case QAbstractSocket::ConnectingState:
-            qInfo() << "ConnectingState"; break;
+            _connectStatus = "ConnectingState"; break;
         case QAbstractSocket::ConnectedState:
-            qInfo() << "ConnectedState"; break;
+            _connectStatus = "ConnectedState"; break;
         case QAbstractSocket::BoundState:
-            qInfo() << "BoundState"; break;
+            _connectStatus = "BoundState"; break;
         case QAbstractSocket::ListeningState:
-            qInfo() << "ListeningState"; break;
+            _connectStatus = "ListeningState"; break;
         case QAbstractSocket::ClosingState:
-            qInfo() << "ClosingState";  break;
+            _connectStatus = "ClosingState";  break;
     }
-    emit statusUpdated();
+    qDebug() << "ClientController::stateChanged : " << _connectStatus;
+    emit statusUpdated(_connectStatus);
 }
 
 bool ClientController::nextPipeline()

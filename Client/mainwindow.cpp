@@ -24,6 +24,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->userTableWidget, &QTableWidget::currentCellChanged,
             this, &MainWindow::onReceivingUserChanged);
 
+    _connectionStatus = new QLabel(this);
+    ui->statusbar->addWidget(_connectionStatus);
+
     ui->stackedWidget->setCurrentIndex(0);
 
     ui->messageTable->setColumnCount(1);
@@ -52,6 +55,8 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::onMessageSendError, Qt::UniqueConnection);
     connect(_controller, &ClientController::messageReceived,
             this, &MainWindow::onMessageReceived, Qt::UniqueConnection);
+    connect(_controller, &ClientController::statusUpdated,
+            this, &MainWindow::onConnectionStatusUpdated);
 
     _controller->connectToHost();
 }
@@ -188,6 +193,11 @@ void MainWindow::onMessageReceived(const Message* message)
         break;
     }
     delete message;
+}
+
+void MainWindow::onConnectionStatusUpdated(const QString& status)
+{
+    _connectionStatus->setText("Connection status : " + status);
 }
 
 void MainWindow::onReceivingUserChanged(int currentRow, int currentColumn,

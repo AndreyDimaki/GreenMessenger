@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QThread>
-
+#include <QLabel>
 #include <QTableWidgetItem>
 
 #include "usermessages.h"
@@ -36,6 +36,7 @@ public:
     void onMessageSendSuccess(const Message* message);
     void onMessageSendError(const Message* message);
     void onMessageReceived(const Message* message);
+    void onConnectionStatusUpdated(const QString& status);
 
 signals:
     void trySendMessage(const Message* message);
@@ -55,6 +56,7 @@ private:
     LoggingStage _loggingStage = LoggingStage::LS_NotLoggedIn;
 
     int _currentSenderID = -1;
+    QLabel* _connectionStatus;
     ClientController* _controller;
     QThread* _thread;
     QList<UserMessages> _userList;

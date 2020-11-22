@@ -12,15 +12,26 @@ MessengerServer::MessengerServer(QObject* parent) :
 {
     readUserList(UserListFileName);
 
+    _logStream.open("logfile.txt", std::ofstream::out);
+    if (!_logStream.is_open())
+    {
+        std::cerr << "Can not open log file 'logfile.txt'. Terminated";
+        std::exit(-1);
+    }
+
     _tcpServer = new QTcpServer(this);
     connect(_tcpServer, &QTcpServer::newConnection,
             this, &MessengerServer::processNewConnection);
-    _tcpServer->listen(QHostAddress::Any, MessengerPort);
+    if (!_tcpServer->listen(QHostAddress::Any, MessengerPort))
+    {
+        writeToLog("Error listening!\n");
+    }
 }
 
 MessengerServer::~MessengerServer()
 {
     _tcpServer->deleteLater();
+    _logStream.close();
 }
 
 void MessengerServer::processNewConnection()
@@ -46,7 +57,7 @@ void MessengerServer::receiveDataFromClient()
 
 void MessengerServer::processClientMessage(std::string& messageStr, QTcpSocket* clientConnection)
 {    
-    std::cout << "MSG : " << messageStr;
+    writeToLog("MSG : "+messageStr);
     auto parsedMessage = Message::createNew(messageStr);
     if (parsedMessage)
     {
@@ -70,7 +81,7 @@ void MessengerServer::processClientMessage(std::string& messageStr, QTcpSocket* 
     }
     else
     {
-        std::cout << "Cannot parse message " << messageStr << "\n";
+        writeToLog("Cannot parse message "+messageStr+"\n");
     }
 }
 
@@ -96,10 +107,12 @@ void MessengerServer::readUserList(const std::string& userListFileName)
         }
     }
 
-    std::cout << "Registered users:" << std::endl;
+    writeToLog("Registered users: \n");
     for (auto user : _userList)
     {
-        std::cout << user.id() << "," << user.name() << std::endl;
+        std::stringstream ss;
+        ss << user.id() << "," << user.name() << std::endl;
+        writeToLog(ss.str());
     }
 
 }
@@ -201,8 +214,17 @@ void MessengerServer::processSendMsg(Message* message)
         (receiver->socket() != nullptr))
     {
         std::string messageStr = message->toOutputString();
-        std::cout << "processSendMsg : " << messageStr;
+        writeToLog("processSendMsg : "+messageStr);
         receiver->socket()->write(messageStr.data(), messageStr.length());
+    }
+}
+
+void MessengerServer::writeToLog(const std::string &line)
+{
+    if (_logStream.is_open())
+    {
+        _logStream << line;
+        _logStream.flush();
     }
 }
 

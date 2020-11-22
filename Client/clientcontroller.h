@@ -24,7 +24,7 @@ public slots:
 signals:
     void error( const QString &err );
     void pipelineFinished();
-    void statusUpdated();
+    void statusUpdated(const QString& status);
 
     void messageSendSuccess(const Message* message);
     void messageSendError(const Message* message);
@@ -38,6 +38,8 @@ private:
     QList<std::string> _stringMessages; // очередь строковых сообщений
     bool _run;
     bool _oldStatus = false;
+    QString _connectStatus;
+    QTimer* _timerTryConnection;
 
     void readData();
     bool nextPipeline();

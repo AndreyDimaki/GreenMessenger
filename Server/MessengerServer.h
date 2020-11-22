@@ -1,6 +1,8 @@
 #ifndef MESSENGERSERVER_H
 #define MESSENGERSERVER_H
 
+#include <fstream>
+
 #include <QObject>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -36,12 +38,15 @@ private:
     std::list<QTcpSocket*> _clientConnections;
 
     std::list<User> _userList;
+    std::ofstream _logStream;
     void readUserList(const std::string& userListFileName);
     void saveUserList(const std::string& userListFileName);
 
     void processCreateNewUserMsg(Message* message, QTcpSocket* clientConnection);
     void processLoginMsg(Message* message, QTcpSocket* clientConnection);
     void processSendMsg(Message* message);
+
+    void writeToLog(const std::string& line);
 };
 
 #endif // MESSENGERSERVER_H
