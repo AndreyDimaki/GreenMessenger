@@ -1,4 +1,3 @@
-#include <QTimer>
 #include <QEventLoop>
 
 #include "clientcontroller.h"
@@ -119,7 +118,7 @@ void ClientController::readData()
 
     _readBuf += QString::fromUtf8(read);
 
-    qDebug() << "ClientController::readData() : " << QString::fromUtf8(read);
+    // qDebug() << "ClientController::readData() : " << QString::fromUtf8(read);
 
     QStringList rcvList = _readBuf.split("\n");
     for (auto inputStr : rcvList)
@@ -171,7 +170,7 @@ void ClientController::stateChanged(QAbstractSocket::SocketState state)
         case QAbstractSocket::ClosingState:
             _connectStatus = "ClosingState";  break;
     }
-    qDebug() << "ClientController::stateChanged : " << _connectStatus;
+    // qDebug() << "ClientController::stateChanged : " << _connectStatus;
     emit statusUpdated(_connectStatus);
 }
 

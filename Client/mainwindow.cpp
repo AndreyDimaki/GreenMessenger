@@ -151,7 +151,7 @@ void MainWindow::onMessageReceived(const Message* message)
                 setWindowTitle("GreenMessenger - "+QString::fromStdString(message->content()));
                 // Получили с сервера наш ID
                 _currentSenderID = message->receiverID();
-                qDebug() << "Current user ID : " << _currentSenderID;
+                // qDebug() << "Current user ID : " << _currentSenderID;
                 ui->stackedWidget->setCurrentIndex(1);
             }
             else

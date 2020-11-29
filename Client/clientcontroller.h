@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QTimer>
 
 #include "../Common/message.h"
 #include "../Common/user.h"
@@ -48,7 +49,5 @@ private:
     QString sendStringMessage(const std::string& msg, int timeOutMSec = 0);
     void checkSocketConnect();
 };
-
-// Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
 
 #endif // CLIENTCONTROLLER_H
